@@ -1,0 +1,394 @@
+<html><head><base href="." ,>
+<meta charset="UTF-8">
+<title>¡Dibuja con XEMON y PAKRIPTOR!</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Comic Sans MS', cursive;
+        background: linear-gradient(135deg, #ffcae8, #b4f8ff);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    body::before {
+        content: 'XEMON';
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 15vw;
+        color: rgba(255, 255, 255, 0.2);
+        z-index: -1;
+        font-weight: bold;
+        pointer-events: none;
+    }
+
+    .header {
+        background-color: #fff;
+        border-radius: 0 0 20px 20px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .toolbar {
+        background: white;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .tool-button {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tool-button:hover {
+        transform: scale(1.1);
+    }
+
+    .tool-button.active {
+        background-color: #ffd700;
+    }
+
+    .color-picker {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .canvas-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+
+    #drawing-canvas {
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        cursor: crosshair;
+    }
+
+    .template-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .template {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        padding: 5px;
+    }
+
+    .template:hover {
+        transform: scale(1.1);
+    }
+
+    .color-buttons {
+        display: flex;
+        gap: 5px;
+        margin-left: 10px;
+    }
+
+    .color-btn {
+        width: 30px;
+        height: 30px;
+        border: 2px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .color-btn:hover {
+        transform: scale(1.1);
+        border-color: #ffd700;
+    }
+</style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 ¡DIBUJA CON XEMON Y PAKRIPTOR!</h1>
+    </div>
+
+    <div class="template-selector">
+        <svg class="template" viewBox="0 0 100 100" onclick="loadTemplate('cat')">
+            <!-- Gatito -->
+            <circle cx="50" cy="50" r="25" stroke="black" fill="none" stroke-width="2"/>
+            <circle cx="40" cy="45" r="3" fill="black"/>
+            <circle cx="60" cy="45" r="3" fill="black"/>
+            <path d="M45 55 Q50 60 55 55" stroke="black" fill="none" stroke-width="2"/>
+            <path d="M35 35 L25 25 M65 35 L75 25" stroke="black" fill="none" stroke-width="2"/>
+        </svg>
+        
+        <svg class="template" viewBox="0 0 100 100" onclick="loadTemplate('dog')">
+            <!-- Perrito -->
+            <circle cx="50" cy="50" r="25" stroke="black" fill="none" stroke-width="2"/>
+            <circle cx="40" cy="45" r="3" fill="black"/>
+            <circle cx="60" cy="45" r="3" fill="black"/>
+            <path d="M45 60 Q50 65 55 60" stroke="black" fill="none" stroke-width="2"/>
+            <path d="M25 40 Q50 30 75 40" stroke="black" fill="none" stroke-width="2"/>
+        </svg>
+
+        <svg class="template" viewBox="0 0 100 100" onclick="loadTemplate('bunny')">
+            <!-- Conejito -->
+            <circle cx="50" cy="60" r="20" stroke="black" fill="none" stroke-width="2"/>
+            <path d="M40 30 Q50 20 60 30" stroke="black" fill="none" stroke-width="2"/>
+            <path d="M35 35 Q45 25 55 35" stroke="black" fill="none" stroke-width="2"/>
+            <circle cx="45" cy="55" r="2" fill="black"/>
+            <circle cx="55" cy="55" r="2" fill="black"/>
+            <path d="M48 62 Q50 65 52 62" stroke="black" fill="none" stroke-width="2"/>
+        </svg>
+    </div>
+
+    <div class="toolbar">
+        <button class="tool-button active" id="pencil" onclick="setTool('pencil')">✏️</button>
+        <button class="tool-button" id="eraser" onclick="setTool('eraser')">🧹</button>
+        <button class="tool-button" id="fill" onclick="setTool('fill')">🪣</button>
+        <input type="color" class="color-picker" id="colorPicker" value="#000000">
+        <div class="color-buttons">
+            <button class="color-btn" style="background-color: #FF0000" onclick="setColor('#FF0000')"></button>
+            <button class="color-btn" style="background-color: #00FF00" onclick="setColor('#00FF00')"></button>
+            <button class="color-btn" style="background-color: #0000FF" onclick="setColor('#0000FF')"></button>
+            <button class="color-btn" style="background-color: #FFFF00" onclick="setColor('#FFFF00')"></button>
+            <button class="color-btn" style="background-color: #FF00FF" onclick="setColor('#FF00FF')"></button>
+            <button class="color-btn" style="background-color: #000000" onclick="setColor('#000000')"></button>
+        </div>
+        <button class="tool-button" onclick="clearCanvas()">🗑️</button>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="drawing-canvas" width="800" height="600"></canvas>
+    </div>
+
+<script>
+const canvas = document.getElementById('drawing-canvas');
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+let currentTool = 'pencil';
+let currentColor = '#000000';
+
+function initCanvas() {
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+initCanvas();
+
+document.getElementById('colorPicker').addEventListener('input', e => {
+    currentColor = e.target.value;
+});
+
+function setColor(color) {
+    currentColor = color;
+    document.getElementById('colorPicker').value = color;
+}
+
+function setTool(tool) {
+    currentTool = tool;
+    document.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tool).classList.add('active');
+}
+
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mouseout', stopDrawing);
+
+function startDrawing(e) {
+    isDrawing = true;
+    if (currentTool === 'fill') {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor(e.clientX - rect.left);
+        const y = Math.floor(e.clientY - rect.top);
+        floodFill(x, y, currentColor);
+    } else {
+        draw(e);
+    }
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    if (currentTool === 'fill') return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (currentTool === 'pencil') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 5;
+    } else if (currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = 20;
+    }
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function stopDrawing() {
+    isDrawing = false;
+    ctx.beginPath();
+}
+
+function clearCanvas() {
+    initCanvas();
+}
+
+function getPixel(imageData, x, y) {
+    if (x < 0 || y < 0 || x >= imageData.width || y >= imageData.height) {
+        return [-1, -1, -1, -1];
+    }
+    const offset = (y * imageData.width + x) * 4;
+    return imageData.data.slice(offset, offset + 4);
+}
+
+function setPixel(imageData, x, y, color) {
+    const offset = (y * imageData.width + x) * 4;
+    imageData.data[offset] = color[0];
+    imageData.data[offset + 1] = color[1];
+    imageData.data[offset + 2] = color[2];
+    imageData.data[offset + 3] = color[3];
+}
+
+function colorsMatch(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+}
+
+function floodFill(startX, startY, fillColor) {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const fillColorRGB = [
+        parseInt(fillColor.slice(1,3), 16),
+        parseInt(fillColor.slice(3,5), 16),
+        parseInt(fillColor.slice(5,7), 16),
+        255
+    ];
+    
+    const targetColor = getPixel(imageData, startX, startY);
+    if (colorsMatch(targetColor, fillColorRGB)) return;
+    
+    const pixelsToCheck = [[startX, startY]];
+    
+    while (pixelsToCheck.length > 0) {
+        const [x, y] = pixelsToCheck.pop();
+        const currentColor = getPixel(imageData, x, y);
+        
+        if (!colorsMatch(currentColor, targetColor)) continue;
+        
+        setPixel(imageData, x, y, fillColorRGB);
+        
+        [[x+1, y], [x-1, y], [x, y+1], [x, y-1]].forEach(([nextX, nextY]) => {
+            if (nextX >= 0 && nextX < canvas.width && nextY >= 0 && nextY < canvas.height) {
+                const nextColor = getPixel(imageData, nextX, nextY);
+                if (colorsMatch(nextColor, targetColor)) {
+                    pixelsToCheck.push([nextX, nextY]);
+                }
+            }
+        });
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function drawCat() {
+    ctx.beginPath();
+    ctx.arc(400, 300, 100, 0, Math.PI * 2);
+    ctx.moveTo(350, 250);
+    ctx.arc(350, 250, 15, 0, Math.PI * 2);
+    ctx.moveTo(450, 250);
+    ctx.arc(450, 250, 15, 0, Math.PI * 2);
+    ctx.moveTo(380, 320);
+    ctx.quadraticCurveTo(400, 340, 420, 320);
+    ctx.moveTo(300, 200);
+    ctx.lineTo(350, 150);
+    ctx.lineTo(380, 200);
+    ctx.moveTo(500, 200);
+    ctx.lineTo(450, 150);
+    ctx.lineTo(420, 200);
+    ctx.stroke();
+}
+
+function drawDog() {
+    ctx.beginPath();
+    ctx.arc(400, 300, 100, 0, Math.PI * 2);
+    ctx.moveTo(350, 250);
+    ctx.arc(350, 250, 15, 0, Math.PI * 2);
+    ctx.moveTo(450, 250);
+    ctx.arc(450, 250, 15, 0, Math.PI * 2);
+    ctx.moveTo(380, 330);
+    ctx.quadraticCurveTo(400, 360, 420, 330);
+    ctx.moveTo(300, 250);
+    ctx.quadraticCurveTo(400, 200, 500, 250);
+    ctx.stroke();
+}
+
+function drawBunny() {
+    ctx.beginPath();
+    ctx.arc(400, 350, 80, 0, Math.PI * 2);
+    ctx.moveTo(350, 200);
+    ctx.quadraticCurveTo(400, 150, 450, 200);
+    ctx.moveTo(320, 220);
+    ctx.quadraticCurveTo(370, 170, 420, 220);
+    ctx.moveTo(380, 340);
+    ctx.arc(380, 340, 5, 0, Math.PI * 2);
+    ctx.moveTo(420, 340);
+    ctx.arc(420, 340, 5, 0, Math.PI * 2);
+    ctx.moveTo(390, 360);
+    ctx.quadraticCurveTo(400, 370, 410, 360);
+    ctx.stroke();
+}
+
+function loadTemplate(template) {
+    clearCanvas();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    
+    switch(template) {
+        case 'cat':
+            drawCat();
+            break;
+        case 'dog':
+            drawDog();
+            break;
+        case 'bunny':
+            drawBunny();
+            break;
+    }
+}
+</script>
+</body>
+</html>
